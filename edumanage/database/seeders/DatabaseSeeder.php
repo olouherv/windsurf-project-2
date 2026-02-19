@@ -55,10 +55,57 @@ class DatabaseSeeder extends Seeder
             'key' => 'starter',
         ], [
             'name' => 'Starter',
+            'subtitle' => 'Essentiel pour démarrer',
+            'description' => 'Pour les petites universités qui souhaitent digitaliser la gestion quotidienne.',
             'price_monthly' => 49,
             'price_yearly' => 490,
             'currency' => 'EUR',
             'is_active' => true,
+            'features' => [
+                'Gestion étudiants & enseignants',
+                'Structure académique',
+                'Planification de base',
+                'Notifications',
+            ],
+            'included_modules' => ['students', 'teachers', 'academic_structure', 'schedules', 'notifications'],
+        ]);
+
+        $proPlan = PricingPlan::firstOrCreate([
+            'key' => 'pro',
+        ], [
+            'name' => 'Pro',
+            'subtitle' => 'Pour une gestion complète',
+            'description' => 'Inclut les modules avancés et l’automatisation des processus clés.',
+            'price_monthly' => 129,
+            'price_yearly' => 1290,
+            'currency' => 'EUR',
+            'is_active' => true,
+            'features' => [
+                'Notes & évaluations',
+                'Documents officiels (PDF)',
+                'Stages & mémoires',
+                'Contrats & paiements',
+            ],
+            'included_modules' => ['students', 'teachers', 'academic_structure', 'grades', 'schedules', 'documents', 'stages', 'contracts', 'vacataire_contracts', 'enrollments', 'notifications'],
+        ]);
+
+        PricingPlan::firstOrCreate([
+            'key' => 'entreprise',
+        ], [
+            'name' => 'Entreprise',
+            'subtitle' => 'Sur mesure',
+            'description' => 'Pour les grandes universités : fonctionnalités avancées, intégrations et accompagnement.',
+            'price_monthly' => 0,
+            'price_yearly' => 0,
+            'currency' => 'EUR',
+            'is_active' => true,
+            'features' => [
+                'Intégrations (Moodle, SSO) selon besoin',
+                'Support prioritaire',
+                'Accompagnement & paramétrage',
+                'Modules sur mesure',
+            ],
+            'included_modules' => array_keys(ModuleSetting::MODULES),
         ]);
 
         $university->update([

@@ -12,12 +12,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Étudiant</label>
-                    <select name="student_id" class="mt-1 w-full border-gray-300 rounded-md" required>
-                        <option value="">-- Choisir --</option>
-                        @foreach($students as $s)
-                            <option value="{{ $s->id }}" {{ old('student_id') == $s->id ? 'selected' : '' }}>{{ $s->full_name }} ({{ $s->student_id }})</option>
-                        @endforeach
-                    </select>
+                    <livewire:shared.student-search-select input-name="student_id" :initial-id="old('student_id')" />
                     @error('student_id') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
                 </div>
 
@@ -33,12 +28,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Encadrant</label>
-                        <select name="supervisor_teacher_id" class="mt-1 w-full border-gray-300 rounded-md">
-                            <option value="">--</option>
-                            @foreach($teachers as $t)
-                                <option value="{{ $t->id }}" {{ old('supervisor_teacher_id') == $t->id ? 'selected' : '' }}>{{ $t->full_name }}</option>
-                            @endforeach
-                        </select>
+                        <livewire:shared.teacher-search-select input-name="supervisor_teacher_id" name-input="supervisor_teacher_name" :allow-create="true" :initial-id="old('supervisor_teacher_id')" />
                     </div>
                 </div>
 

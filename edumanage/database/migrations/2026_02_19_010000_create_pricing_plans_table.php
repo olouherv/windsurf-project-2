@@ -12,6 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('key')->unique();
             $table->string('name');
+            $table->string('subtitle')->nullable();
+            $table->text('description')->nullable();
             $table->decimal('price_monthly', 12, 2)->default(0);
             $table->decimal('price_yearly', 12, 2)->default(0);
             $table->string('currency', 8)->default('EUR');

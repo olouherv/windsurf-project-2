@@ -103,11 +103,6 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
     Route::get('evaluations/{evaluation}/edit', [EvaluationController::class, 'edit'])->name('evaluations.edit');
     Route::get('evaluations/{evaluation}/grades', [EvaluationController::class, 'grades'])->name('evaluations.grades');
 
-    // Inscriptions pédagogiques
-    Route::middleware(['module:enrollments'])->group(function () {
-        Route::view('enrollments', 'enrollments.index')->name('enrollments.index');
-    });
-
     // Documents officiels (PDF)
     Route::middleware(['module:documents'])->group(function () {
         Route::get('documents/students/{student}/attestation-inscription', [DocumentsController::class, 'attestationInscription'])

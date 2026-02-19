@@ -14,11 +14,32 @@
         </select>
     </div>
 
+    <div class="flex items-center justify-between mb-4">
+        <div class="text-sm text-gray-600">
+            @if(count($selectedStudentIds) > 0)
+                {{ count($selectedStudentIds) }} sélectionné(s)
+            @endif
+        </div>
+        <button type="button" wire:click="openEnrollModal" @disabled(count($selectedStudentIds) === 0)
+            class="inline-flex items-center px-3 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            Inscrire
+        </button>
+    </div>
+
     <!-- Table -->
     <div class="overflow-x-auto">
         <table class="w-full">
             <thead class="bg-gray-50">
                 <tr>
+                    @php
+                        $pageIds = $students->pluck('id')->toArray();
+                        $pageAllSelected = count(array_diff($pageIds, $selectedStudentIds)) === 0 && count($pageIds) > 0;
+                    @endphp
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <input type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                            @checked($pageAllSelected)
+                            wire:click="toggleSelectPage(@js($pageIds))">
+                    </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" wire:click="sortBy('student_id')">
                         {{ __('Matricule') }}
                         @if($sortField === 'student_id')
@@ -48,6 +69,11 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($students as $student)
                 <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                            @checked(in_array($student->id, $selectedStudentIds, true))
+                            wire:click="toggleStudentSelection({{ $student->id }})">
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {{ $student->student_id }}
                     </td>
@@ -90,7 +116,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                         {{ __('Aucun étudiant trouvé.') }}
                     </td>
                 </tr>
@@ -103,4 +129,52 @@
     <div class="mt-6">
         {{ $students->links() }}
     </div>
+
+    @if($showEnrollModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="closeEnrollModal"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Inscrire {{ count($selectedStudentIds) }} étudiant(s)</h3>
+
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Année académique</label>
+                                <select wire:model.live="bulkAcademicYearId" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">--</option>
+                                    @foreach($academicYears as $ay)
+                                        <option value="{{ $ay->id }}">{{ $ay->name }} @if($ay->is_current)★@endif</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Année de formation</label>
+                                <select wire:model.live="bulkProgramYearId" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">--</option>
+                                    @foreach($programYears as $py)
+                                        <option value="{{ $py->id }}">{{ $py->program?->name ?? '-' }} - {{ $py->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="button" wire:click="bulkEnroll"
+                            @disabled(!$bulkAcademicYearId || !$bulkProgramYearId)
+                            class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                            Inscrire
+                        </button>
+                        <button type="button" wire:click="closeEnrollModal"
+                            class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-gray-700 font-medium hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm">
+                            Annuler
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

@@ -13,6 +13,8 @@ class PricingPlan extends Model
     protected $fillable = [
         'key',
         'name',
+        'subtitle',
+        'description',
         'price_monthly',
         'price_yearly',
         'currency',

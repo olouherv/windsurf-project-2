@@ -23,6 +23,24 @@
                     @error('name') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Sous-titre</label>
+                    <input type="text" name="subtitle" value="{{ old('subtitle') }}" class="mt-1 w-full border-gray-300 rounded-md" />
+                    @error('subtitle') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea name="description" class="mt-1 w-full border-gray-300 rounded-md" rows="3">{{ old('description') }}</textarea>
+                    @error('description') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Features</label>
+                    <textarea name="features" class="mt-1 w-full border-gray-300 rounded-md" rows="4" placeholder="Une fonctionnalité par ligne">{{ old('features') }}</textarea>
+                    @error('features') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Prix mensuel</label>

@@ -15,8 +15,8 @@
         <!-- Mobile overlay -->
         <div x-show="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"></div>
         <!-- Sidebar -->
-        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'" class="w-64 bg-gray-900 text-white min-h-screen flex-shrink-0 fixed left-0 top-0 overflow-y-auto z-50 transition-transform duration-300 ease-in-out">
-            <div class="p-5 border-b border-gray-700">
+        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'" class="w-64 bg-gray-900 text-white h-screen flex flex-col flex-shrink-0 fixed left-0 top-0 z-50 transition-transform duration-300 ease-in-out">
+            <div class="p-5 border-b border-gray-700 flex-shrink-0">
                 <h1 class="text-2xl font-bold text-white">EduManage</h1>
                 @if(auth()->user()->isSuperAdmin())
                     <p class="text-gray-400 text-sm mt-1">Super Admin</p>
@@ -25,7 +25,7 @@
                 @endif
             </div>
             
-            <nav class="p-4 space-y-2">
+            <nav class="p-4 space-y-2 overflow-y-auto flex-1">
                 <!-- Dashboard -->
                 <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 rounded-lg text-base font-medium {{ request()->routeIs('dashboard') ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,16 +63,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
                     </svg>
                     Étudiants
-                </a>
-                @endif
-
-                <!-- Inscriptions pédagogiques -->
-                @if(auth()->user()->canAccessModule('enrollments'))
-                <a href="{{ route('enrollments.index') }}" class="flex items-center px-4 py-3 rounded-lg text-base font-medium {{ request()->routeIs('enrollments.*') ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
-                    </svg>
-                    Inscriptions
                 </a>
                 @endif
 

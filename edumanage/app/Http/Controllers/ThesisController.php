@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
-use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\Thesis;
 use Illuminate\Http\RedirectResponse;
@@ -27,9 +26,7 @@ class ThesisController extends Controller
         $universityId = auth()->user()->university_id;
 
         return view('theses.create', [
-            'students' => Student::where('university_id', $universityId)->orderBy('last_name')->orderBy('first_name')->get(),
             'academicYears' => AcademicYear::where('university_id', $universityId)->orderByDesc('start_date')->get(),
-            'teachers' => Teacher::where('university_id', $universityId)->orderBy('last_name')->orderBy('first_name')->get(),
         ]);
     }
 
@@ -41,6 +38,7 @@ class ThesisController extends Controller
             'student_id' => ['required', 'exists:students,id'],
             'academic_year_id' => ['nullable', 'exists:academic_years,id'],
             'supervisor_teacher_id' => ['nullable', 'exists:teachers,id'],
+            'supervisor_teacher_name' => ['nullable', 'string', 'max:255'],
             'title' => ['required', 'string', 'max:255'],
             'abstract' => ['nullable', 'string'],
             'submission_date' => ['nullable', 'date'],
@@ -50,7 +48,28 @@ class ThesisController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
+        if (empty($data['supervisor_teacher_id']) && !empty($data['supervisor_teacher_name'])) {
+            $name = trim($data['supervisor_teacher_name']);
+            if ($name !== '') {
+                [$first, $last] = array_pad(preg_split('/\s+/', $name, 2) ?: [], 2, null);
+
+                $teacher = Teacher::create([
+                    'university_id' => $universityId,
+                    'employee_id' => 'EXT-' . now()->format('YmdHis'),
+                    'first_name' => $first ?: $name,
+                    'last_name' => $last ?: '-',
+                    'email' => 'ext-' . now()->format('YmdHis') . '@example.invalid',
+                    'type' => 'permanent',
+                    'status' => 'active',
+                ]);
+
+                $data['supervisor_teacher_id'] = $teacher->id;
+            }
+        }
+
         $data['university_id'] = $universityId;
+
+        unset($data['supervisor_teacher_name']);
 
         Thesis::create($data);
 
@@ -70,9 +89,7 @@ class ThesisController extends Controller
 
         return view('theses.edit', [
             'thesis' => $thesis,
-            'students' => Student::where('university_id', $universityId)->orderBy('last_name')->orderBy('first_name')->get(),
             'academicYears' => AcademicYear::where('university_id', $universityId)->orderByDesc('start_date')->get(),
-            'teachers' => Teacher::where('university_id', $universityId)->orderBy('last_name')->orderBy('first_name')->get(),
         ]);
     }
 
@@ -82,6 +99,7 @@ class ThesisController extends Controller
             'student_id' => ['required', 'exists:students,id'],
             'academic_year_id' => ['nullable', 'exists:academic_years,id'],
             'supervisor_teacher_id' => ['nullable', 'exists:teachers,id'],
+            'supervisor_teacher_name' => ['nullable', 'string', 'max:255'],
             'title' => ['required', 'string', 'max:255'],
             'abstract' => ['nullable', 'string'],
             'submission_date' => ['nullable', 'date'],
@@ -90,6 +108,28 @@ class ThesisController extends Controller
             'status' => ['required', 'in:draft,in_progress,submitted,defended,cancelled'],
             'notes' => ['nullable', 'string'],
         ]);
+
+        if (empty($data['supervisor_teacher_id']) && !empty($data['supervisor_teacher_name'])) {
+            $universityId = auth()->user()->university_id;
+            $name = trim($data['supervisor_teacher_name']);
+            if ($name !== '') {
+                [$first, $last] = array_pad(preg_split('/\s+/', $name, 2) ?: [], 2, null);
+
+                $teacher = Teacher::create([
+                    'university_id' => $universityId,
+                    'employee_id' => 'EXT-' . now()->format('YmdHis'),
+                    'first_name' => $first ?: $name,
+                    'last_name' => $last ?: '-',
+                    'email' => 'ext-' . now()->format('YmdHis') . '@example.invalid',
+                    'type' => 'permanent',
+                    'status' => 'active',
+                ]);
+
+                $data['supervisor_teacher_id'] = $teacher->id;
+            }
+        }
+
+        unset($data['supervisor_teacher_name']);
 
         $thesis->update($data);
 

@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\Internship;
-use App\Models\Student;
-use App\Models\Teacher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -27,9 +25,7 @@ class InternshipController extends Controller
         $universityId = auth()->user()->university_id;
 
         return view('internships.create', [
-            'students' => Student::where('university_id', $universityId)->orderBy('last_name')->orderBy('first_name')->get(),
             'academicYears' => AcademicYear::where('university_id', $universityId)->orderByDesc('start_date')->get(),
-            'teachers' => Teacher::where('university_id', $universityId)->orderBy('last_name')->orderBy('first_name')->get(),
         ]);
     }
 
@@ -73,9 +69,7 @@ class InternshipController extends Controller
 
         return view('internships.edit', [
             'internship' => $internship,
-            'students' => Student::where('university_id', $universityId)->orderBy('last_name')->orderBy('first_name')->get(),
             'academicYears' => AcademicYear::where('university_id', $universityId)->orderByDesc('start_date')->get(),
-            'teachers' => Teacher::where('university_id', $universityId)->orderBy('last_name')->orderBy('first_name')->get(),
         ]);
     }
 

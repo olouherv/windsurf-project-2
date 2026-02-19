@@ -93,6 +93,18 @@
 - [x] Menu latéral: conditions modules corrigées (contracts/vacataire_contracts/enrollments)
 - [x] Dashboard université: compteur Inscriptions basé sur `StudentEnrollment` + année académique courante
 
+#### ✅ Améliorations UI/Modules (V1)
+- [x] Stages & Mémoires : autocomplétion Étudiant / Encadrant via composants Livewire réutilisables
+  - Remplacement des `select` lourds par recherche dynamique (nom/matricule / nom/matricule enseignant)
+  - Sélection automatique sur match exact matricule (`student_id`)
+- [x] Plans & Tarifs (SuperAdmin) : gestion des `features`
+  - Ajout du champ Features dans create/edit (1 feature par ligne)
+  - Parsing + persistence en JSON (`features`)
+- [x] Inscriptions pédagogiques : inscription groupée depuis la page Étudiants
+  - Sélection multiple (checkbox) + modal (année académique + année de formation)
+  - Ignorer / notifier les étudiants déjà inscrits pour l'année choisie
+  - Suppression de l’onglet et de la route dédiée `enrollments`
+
 #### ⏳ À faire (SuperAdmin)
 - [ ] Offres / Abonnements par université (plan choisi)
 - [ ] Tarification : interface pour modifier les tarifs (plans, options)

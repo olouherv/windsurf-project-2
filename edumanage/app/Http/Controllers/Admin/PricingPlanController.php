@@ -10,6 +10,26 @@ use Illuminate\View\View;
 
 class PricingPlanController
 {
+    private function parseFeatures(?string $featuresText): array
+    {
+        $featuresText = $featuresText !== null ? trim($featuresText) : '';
+        if ($featuresText === '') {
+            return [];
+        }
+
+        $lines = preg_split('/\r\n|\r|\n/', $featuresText) ?: [];
+        $features = [];
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+            $features[] = ltrim($line, "-•\t ");
+        }
+
+        return array_values(array_unique($features));
+    }
+
     public function index(): View
     {
         $plans = PricingPlan::query()->orderByDesc('is_active')->orderBy('name')->get();
@@ -20,7 +40,6 @@ class PricingPlanController
     public function create(): View
     {
         $modules = ModuleSetting::MODULES;
-
         return view('admin.pricing-plans.create', compact('modules'));
     }
 
@@ -29,6 +48,9 @@ class PricingPlanController
         $data = $request->validate([
             'key' => ['required', 'string', 'max:64', 'unique:pricing_plans,key'],
             'name' => ['required', 'string', 'max:255'],
+            'subtitle' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'features' => ['nullable', 'string'],
             'price_monthly' => ['required', 'numeric', 'min:0'],
             'price_yearly' => ['required', 'numeric', 'min:0'],
             'currency' => ['required', 'string', 'max:8'],
@@ -39,6 +61,7 @@ class PricingPlanController
 
         $data['is_active'] = (bool) ($data['is_active'] ?? false);
         $data['included_modules'] = array_values($data['included_modules'] ?? []);
+        $data['features'] = $this->parseFeatures($data['features'] ?? null);
 
         PricingPlan::create($data);
 
@@ -57,6 +80,9 @@ class PricingPlanController
         $data = $request->validate([
             'key' => ['required', 'string', 'max:64', 'unique:pricing_plans,key,' . $pricingPlan->id],
             'name' => ['required', 'string', 'max:255'],
+            'subtitle' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'features' => ['nullable', 'string'],
             'price_monthly' => ['required', 'numeric', 'min:0'],
             'price_yearly' => ['required', 'numeric', 'min:0'],
             'currency' => ['required', 'string', 'max:8'],
@@ -67,6 +93,7 @@ class PricingPlanController
 
         $data['is_active'] = (bool) ($data['is_active'] ?? false);
         $data['included_modules'] = array_values($data['included_modules'] ?? []);
+        $data['features'] = $this->parseFeatures($data['features'] ?? null);
 
         $pricingPlan->update($data);
 

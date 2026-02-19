@@ -24,6 +24,30 @@
                     @error('name') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Sous-titre</label>
+                    <input type="text" name="subtitle" value="{{ old('subtitle', $plan->subtitle) }}" class="mt-1 w-full border-gray-300 rounded-md" />
+                    @error('subtitle') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea name="description" class="mt-1 w-full border-gray-300 rounded-md" rows="3">{{ old('description', $plan->description) }}</textarea>
+                    @error('description') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Features</label>
+                    @php
+                        $featuresText = old('features');
+                        if ($featuresText === null) {
+                            $featuresText = is_array($plan->features) ? implode("\n", $plan->features) : '';
+                        }
+                    @endphp
+                    <textarea name="features" class="mt-1 w-full border-gray-300 rounded-md" rows="4" placeholder="Une fonctionnalité par ligne">{{ $featuresText }}</textarea>
+                    @error('features') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Prix mensuel</label>

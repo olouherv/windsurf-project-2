@@ -209,7 +209,7 @@
                         @endif
 
                         <h3 class="text-xl font-semibold {{ $isFeatured ? '' : 'text-gray-900' }} mb-2">{{ $plan->name }}</h3>
-                        <p class="{{ $textMuted }} text-sm mb-6">{{ $plan->key }}</p>
+                        <p class="{{ $textMuted }} text-sm mb-6">{{ $plan->subtitle ?: $plan->description ?: $plan->key }}</p>
 
                         <div class="mb-6">
                             <span class="text-4xl font-bold {{ $isFeatured ? '' : 'text-gray-900' }}">
