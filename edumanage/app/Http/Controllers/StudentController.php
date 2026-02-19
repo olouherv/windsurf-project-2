@@ -14,7 +14,11 @@ class StudentController extends Controller
 
     public function show(Student $student): View
     {
-        $student->load(['enrollments.programYear.program', 'enrollments.academicYear', 'grades.evaluation.ecu']);
+        $student->load([
+            'enrollments.programYear.program',
+            'enrollments.academicYear',
+            'grades.evaluation.ecu',
+        ]);
         return view('students.show', compact('student'));
     }
 

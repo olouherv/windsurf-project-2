@@ -2,7 +2,11 @@
 
 namespace App\Livewire\Students;
 
+use App\Models\AcademicYear;
+use App\Models\ProgramYear;
 use App\Models\Student;
+use App\Models\StudentEnrollment;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -26,6 +30,10 @@ class StudentForm extends Component
     public string $status = 'active';
     public $photo = null;
 
+    public ?int $program_year_id = null;
+    public ?int $academic_year_id = null;
+    public bool $create_contract = false;
+
     protected function rules(): array
     {
         $studentId = $this->studentId;
@@ -44,6 +52,9 @@ class StudentForm extends Component
             'nationality' => 'nullable|string|max:50',
             'status' => 'required|in:active,inactive,graduated,suspended',
             'photo' => 'nullable|image|max:2048',
+            'program_year_id' => $this->editMode ? 'nullable' : 'nullable|exists:program_years,id',
+            'academic_year_id' => $this->editMode ? 'nullable' : 'nullable|exists:academic_years,id',
+            'create_contract' => $this->editMode ? 'nullable' : 'boolean',
         ];
     }
 
@@ -66,7 +77,14 @@ class StudentForm extends Component
                 $this->address = $student->address ?? '';
                 $this->nationality = $student->nationality ?? '';
                 $this->status = $student->status ?? 'active';
+
+                $currentEnrollment = $student->currentEnrollment;
+                $this->program_year_id = $currentEnrollment?->program_year_id;
+                $this->academic_year_id = $currentEnrollment?->academic_year_id;
             }
+        } else {
+            $currentYear = AcademicYear::where('is_current', true)->first();
+            $this->academic_year_id = $currentYear?->id;
         }
     }
 
@@ -83,21 +101,51 @@ class StudentForm extends Component
             
             \Log::info('Validation passed', $validated);
 
+            $programYearId = $validated['program_year_id'] ?? null;
+            $academicYearId = $validated['academic_year_id'] ?? null;
+            $createContract = (bool)($validated['create_contract'] ?? false);
+
+            unset($validated['program_year_id'], $validated['academic_year_id'], $validated['create_contract']);
+
             if ($this->photo) {
                 $validated['photo'] = $this->photo->store('students', 'public');
             }
 
-            if ($this->editMode && $this->studentId) {
-                $student = Student::findOrFail($this->studentId);
-                $student->update($validated);
-                \Log::info('Student updated', ['id' => $this->studentId]);
-                session()->flash('success', __('Étudiant mis à jour avec succès.'));
-            } else {
+            $student = DB::transaction(function () use ($validated, $programYearId, $academicYearId) {
+                if ($this->editMode && $this->studentId) {
+                    $student = Student::findOrFail($this->studentId);
+                    $student->update($validated);
+                    \Log::info('Student updated', ['id' => $this->studentId]);
+                    session()->flash('success', __('Étudiant mis à jour avec succès.'));
+                    return $student;
+                }
+
                 $validated['university_id'] = auth()->user()->university_id;
                 $validated['enrollment_date'] = now();
-                Student::create($validated);
-                \Log::info('Student created');
+                $student = Student::create($validated);
+                \Log::info('Student created', ['id' => $student->id]);
+
+                if ($programYearId && $academicYearId) {
+                    StudentEnrollment::firstOrCreate(
+                        [
+                            'student_id' => $student->id,
+                            'program_year_id' => $programYearId,
+                            'academic_year_id' => $academicYearId,
+                        ],
+                        [
+                            'university_id' => auth()->user()->university_id,
+                            'status' => 'enrolled',
+                            'enrollment_date' => now(),
+                        ]
+                    );
+                }
+
                 session()->flash('success', __('Étudiant créé avec succès.'));
+                return $student;
+            });
+
+            if (!$this->editMode && $createContract) {
+                return $this->redirect(route('contracts.create', $student), navigate: true);
             }
 
             return $this->redirect(route('students.index'), navigate: true);
@@ -109,6 +157,14 @@ class StudentForm extends Component
 
     public function render()
     {
-        return view('livewire.students.student-form');
+        $universityId = auth()->user()->university_id;
+
+        return view('livewire.students.student-form', [
+            'academicYears' => AcademicYear::orderBy('start_date', 'desc')->get(),
+            'programYears' => ProgramYear::with('program')
+                ->whereHas('program', fn($q) => $q->where('university_id', $universityId))
+                ->orderBy('year_number')
+                ->get(),
+        ]);
     }
 }

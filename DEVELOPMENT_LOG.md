@@ -28,6 +28,76 @@
 
 ## 📝 Changelog
 
+### 2026-02-19 - Multi-tenancy + Modules + SuperAdmin (V1)
+
+#### ✅ Complété
+- [x] Isolation multi-tenant renforcée sur les contrats (étudiants + vacataires)
+  - Filtrage par `university_id` sur les recherches (étudiants, enseignants, ECU, années académiques)
+  - Correction des fuites de données cross-tenant sur les listes/formulaires
+- [x] Contrats vacataires : ajout `university_id` + backfill
+  - Migration `add_university_id_to_vacataire_contracts_table`
+  - Modèle `VacataireContract` rendu tenant-aware via `BelongsToUniversity`
+- [x] Désactivation de modules réellement appliquée côté routes
+  - Middleware `module:<key>` sur routes `contracts/*` et `vacataire-contracts/*`
+  - Alias middleware `module`, `tenant`, `locale` enregistrés
+- [x] Corrections erreurs null (Blade/Livewire)
+  - `Attempt to read property "name" on null` (contrats étudiants)
+  - `Attempt to read property "full_name" on null` (contrats vacataires)
+- [x] Affichage période d'essai (démo)
+  - Affichage robuste du temps restant (`trial_ends_at`) dans le layout admin
+
+#### ✅ SuperAdmin — Universités (V1)
+- [x] Liste des universités enrichie
+  - Affichage admin de l'université (nom + email)
+  - Affichage statut démo (restant/expirée)
+- [x] SuperAdmin : activation/désactivation des modules par université (toggle)
+
+#### ✅ Plans/Tarifs + Offre par université (V1)
+- [x] Modèle + table `pricing_plans`
+- [x] CRUD SuperAdmin Plans & Tarifs
+- [x] Assignation d'une offre à une université (pricing_plan_id + plan_key + plan_started_at)
+
+#### ✅ Exports (V1)
+- [x] Contrats étudiants
+  - [x] Export PDF (DomPDF)
+  - [x] Export CSV (compatible Excel)
+
+#### ✅ Démo / Trial
+- [x] Migration pour mettre toutes les universités existantes en démo (14 jours)
+
+#### ✅ Documents Officiels (V1)
+- [x] Génération PDF
+  - [x] Attestation d'inscription
+  - [x] Certificat de scolarité
+  - [x] Accès depuis la fiche étudiant
+
+#### ✅ Stages & Mémoires (V1)
+- [x] Migrations + modèles tenant-aware
+- [x] CRUD Stages (internships)
+- [x] CRUD Mémoires (theses)
+
+#### ✅ Notifications (V1)
+- [x] Notifications in-app (table `notifications`)
+- [x] Page liste + action "tout marquer comme lu"
+
+#### ✅ Plans/Tarifs dynamiques (V2)
+- [x] Page d'accueil: affichage des plans actifs depuis la table `pricing_plans`
+- [x] Ajout de `included_modules` (JSON) pour lier un plan aux modules inclus
+- [x] UI SuperAdmin: sélection des modules inclus dans un plan
+
+#### ✅ Abonnement & Paiements (V1)
+- [x] Université: page Abonnement + demande de changement de plan (création paiement `pending`)
+- [x] SuperAdmin: page Paiements + validation (marquer payé) appliquant le plan à l'université
+
+#### ✅ Corrections
+- [x] Menu latéral: conditions modules corrigées (contracts/vacataire_contracts/enrollments)
+- [x] Dashboard université: compteur Inscriptions basé sur `StudentEnrollment` + année académique courante
+
+#### ⏳ À faire (SuperAdmin)
+- [ ] Offres / Abonnements par université (plan choisi)
+- [ ] Tarification : interface pour modifier les tarifs (plans, options)
+- [ ] Facturation (historique, statuts, échéances)
+
 ### 2026-02-18 - Phase 6: Garants & Contrats Étudiants
 
 #### ✅ Complété
@@ -137,6 +207,9 @@ Tables créées:
 ### Modules Obligatoires (toujours actifs)
 - [x] Étudiants (CRUD complet)
   - [x] Garant optionnel (infos contact, relation, profession)
+  - [x] Inscription pédagogique possible lors de la création (formation + année académique)
+  - [x] Option : créer un contrat étudiant après la création
+  - [x] Fiche étudiant : affichage correct des notes récentes (ECU + type d'évaluation)
 - [x] Enseignants (CRUD complet)
   - [x] Champs : sexe, grade, titre, spécialisation
   - [x] Informations fiscales : RIB, IFU (numéro + document)
@@ -190,14 +263,40 @@ Tables créées:
   - [x] Liaison automatique : étudiants inscrits → notes ECU
 
 ### Modules Optionnels (activables par admin)
-- [ ] Planification (emplois du temps, salles)
+- [x] Planification (emplois du temps, salles)
+  - [x] Gestion des séances (CM/TD/TP) par année académique
+  - [x] Affectation ECU, enseignant, salle, groupe (optionnels)
+  - [x] Recherche + liste triée (jour / horaire)
+  - [x] Création en une fois de plusieurs séances (multi-créneaux : jours + heures)
+  - [x] Planification datée (activités)
+    - [x] Catégorie : Cours (récurrent) vs Activité (réunion/évènement daté)
+    - [x] Contrôle d'indisponibilité des salles sur un créneau (date + heure) y compris avec cours récurrents
+- [x] Salles (CRUD + disponibilités)
+  - [x] CRUD (liste, création, édition, suppression)
+  - [x] Page de détails : séances planifiées + vérification de disponibilité (date + heure)
+- [x] Équipements
+  - [x] CRUD équipements (multi-tenant)
+  - [x] Affectation multi-équipements sur une planification
 - [ ] Absences & Présences
+  - [ ] Feuilles de présence par séance/ECU
+  - [ ] Absences (absent/excusé) + retards
+  - [ ] Exports (PDF/Excel)
 - [ ] Inscriptions Pédagogiques
-- [ ] Contrats Vacataires
+  - [ ] Gestion des groupes / parcours
+  - [ ] Workflow de validation
 - [ ] Stages & Mémoires
+  - [ ] Suivi stage (entreprise, tuteur, convention)
+  - [ ] Mémoire (sujet, encadrant, soutenance)
 - [ ] Documents Officiels
+  - [ ] Génération PDF : attestations, certificats, contrats, bulletins
 - [ ] Notifications
+  - [ ] Notifications in-app + email (événements: paiement, notes publiées, absences)
 - [ ] Intégration Moodle
+  - [ ] Synchronisation (étudiants/enseignants/cours/cohortes)
+
+### Exports & Documents (général)
+- [ ] Export Excel/CSV (listes, paiements, absences, notes)
+- [ ] Génération PDF (contrats, reçus, bulletins, attestations)
 
 ---
 
@@ -245,8 +344,8 @@ Tables créées:
 7. ~~Gestion Structure Académique (Années, UE, ECU)~~ ✅
 8. ~~Garants étudiants (optionnel)~~ ✅
 9. ~~Contrats étudiants et paiements~~ ✅
-10. Implémenter le CRUD Semestres
-11. Interface CRUD Contrats étudiants
-12. Module Notes & Évaluations
-13. Module Planification (calendrier)
+10. ~~Implémenter le CRUD Semestres~~ ✅
+11. ~~Interface CRUD Contrats étudiants~~ ✅
+12. ~~Module Notes & Évaluations~~ ✅
+13. ~~Module Planification (calendrier)~~ ✅
 14. Intégration Moodle API

@@ -43,7 +43,7 @@ class ContractForm extends Component
 
     public function selectTeacher(int $id): void
     {
-        $teacher = Teacher::find($id);
+        $teacher = Teacher::where('university_id', auth()->user()->university_id)->find($id);
         if ($teacher) {
             $this->teacher_id = $teacher->id;
             $this->selectedTeacher = $teacher;
@@ -73,7 +73,9 @@ class ContractForm extends Component
 
     public function selectEcu(int $id): void
     {
-        $ecu = Ecu::with('ue')->find($id);
+        $ecu = Ecu::with('ue')
+            ->whereHas('ue.semester.programYear.program', fn ($q) => $q->where('university_id', auth()->user()->university_id))
+            ->find($id);
         if ($ecu) {
             $this->ecu_id = $ecu->id;
             $this->selectedEcu = $ecu;
@@ -140,12 +142,16 @@ class ContractForm extends Component
 
     public function mount(?VacataireContract $vacataireContract = null, ?Teacher $teacher = null): void
     {
+        $universityId = auth()->user()->university_id;
+
         if ($vacataireContract && $vacataireContract->exists) {
             $this->contract = $vacataireContract;
             $this->editMode = true;
             $this->teacher_id = $vacataireContract->teacher_id;
             $this->selectedTeacher = $vacataireContract->teacher;
-            $this->teacherSearch = $vacataireContract->teacher->full_name . ' (' . $vacataireContract->teacher->employee_id . ')';
+            $this->teacherSearch = $vacataireContract->teacher
+                ? ($vacataireContract->teacher->full_name . ' (' . $vacataireContract->teacher->employee_id . ')')
+                : '';
             $this->academic_year_id = $vacataireContract->academic_year_id;
             
             if ($vacataireContract->ecu) {
@@ -168,7 +174,9 @@ class ContractForm extends Component
         }
 
         if (!$this->academic_year_id) {
-            $currentYear = AcademicYear::where('is_current', true)->first();
+            $currentYear = AcademicYear::where('is_current', true)
+                ->where('university_id', $universityId)
+                ->first();
             if ($currentYear) {
                 $this->academic_year_id = $currentYear->id;
                 if (!$this->start_date) {
@@ -192,6 +200,10 @@ class ContractForm extends Component
     {
         $validated = $this->validate();
 
+        if (empty($validated['university_id'])) {
+            $validated['university_id'] = auth()->user()->university_id;
+        }
+
         if ($this->editMode && $this->contract) {
             $this->contract->update($validated);
             session()->flash('success', __('Contrat vacataire mis à jour avec succès.'));
@@ -207,9 +219,12 @@ class ContractForm extends Component
 
     public function render()
     {
+        $universityId = auth()->user()->university_id;
+
         $teacherResults = [];
         if ($this->showTeacherDropdown && strlen($this->teacherSearch) >= 2) {
             $teacherResults = Teacher::where('type', 'vacataire')
+                ->where('university_id', $universityId)
                 ->where(function ($q) {
                     $q->where('first_name', 'like', '%' . $this->teacherSearch . '%')
                       ->orWhere('last_name', 'like', '%' . $this->teacherSearch . '%')
@@ -220,6 +235,7 @@ class ContractForm extends Component
         $ecuResults = [];
         if ($this->showEcuDropdown && strlen($this->ecuSearch) >= 2) {
             $ecuResults = Ecu::with('ue')
+                ->whereHas('ue.semester.programYear.program', fn ($q) => $q->where('university_id', $universityId))
                 ->where(function ($q) {
                     $q->where('code', 'like', '%' . $this->ecuSearch . '%')
                       ->orWhere('name', 'like', '%' . $this->ecuSearch . '%');
@@ -229,7 +245,7 @@ class ContractForm extends Component
         return view('livewire.vacataires.contract-form', [
             'teacherResults' => $teacherResults,
             'ecuResults' => $ecuResults,
-            'academicYears' => AcademicYear::orderBy('start_date', 'desc')->get(),
+            'academicYears' => AcademicYear::where('university_id', $universityId)->orderBy('start_date', 'desc')->get(),
         ]);
     }
 }

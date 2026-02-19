@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Enrollment;
+use App\Models\StudentEnrollment;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\Program;
@@ -51,7 +51,9 @@ class DashboardController extends Controller
             'teachers' => Teacher::count(),
             'programs' => Program::where('is_active', true)->count(),
             'enrollments' => $currentYear 
-                ? Enrollment::where('academic_year_id', $currentYear->id)->where('status', 'confirmed')->count() 
+                ? StudentEnrollment::where('academic_year_id', $currentYear->id)
+                    ->whereIn('status', ['enrolled', 'validated'])
+                    ->count() 
                 : 0,
         ];
 

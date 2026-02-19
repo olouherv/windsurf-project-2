@@ -47,8 +47,8 @@
                         <span class="text-sm font-mono text-gray-900">{{ $contract->contract_number }}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">{{ $contract->teacher->full_name }}</div>
-                        <div class="text-sm text-gray-500">{{ $contract->teacher->employee_id }}</div>
+                        <div class="text-sm font-medium text-gray-900">{{ $contract->teacher?->full_name ?? '-' }}</div>
+                        <div class="text-sm text-gray-500">{{ $contract->teacher?->employee_id ?? '' }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         @if($contract->ecu)

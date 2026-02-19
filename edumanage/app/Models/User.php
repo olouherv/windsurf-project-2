@@ -83,6 +83,10 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         if (!$this->university) return false;
+
+        if (method_exists($this->university, 'isInTrial') && $this->university->isInTrial()) {
+            return true;
+        }
         
         return $this->university->isModuleEnabled($moduleKey);
     }

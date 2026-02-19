@@ -91,6 +91,29 @@
                 </select>
             </div>
 
+            <!-- Année académique / Formation -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Année académique') }}</label>
+                <select wire:model="academic_year_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    <option value="">{{ __('Sélectionner') }}</option>
+                    @foreach(($academicYears ?? []) as $year)
+                        <option value="{{ $year->id }}">{{ $year->name }} @if($year->is_current)★@endif</option>
+                    @endforeach
+                </select>
+                @error('academic_year_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Formation (niveau)') }}</label>
+                <select wire:model="program_year_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    <option value="">{{ __('Sélectionner') }}</option>
+                    @foreach(($programYears ?? []) as $py)
+                        <option value="{{ $py->id }}">{{ $py->program->name }} - {{ $py->name }}</option>
+                    @endforeach
+                </select>
+                @error('program_year_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
             <!-- Adresse -->
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Adresse') }}</label>
@@ -102,6 +125,13 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Photo') }}</label>
                 <input type="file" wire:model="photo" accept="image/*" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                 @error('photo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="inline-flex items-center">
+                    <input type="checkbox" wire:model="create_contract" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                    <span class="ml-2 text-sm text-gray-700">{{ __('Créer un contrat étudiant après la création') }}</span>
+                </label>
             </div>
         </div>
 

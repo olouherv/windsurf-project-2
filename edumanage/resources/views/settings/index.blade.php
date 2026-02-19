@@ -35,7 +35,7 @@
                 
                 @php $university = auth()->user()->university; @endphp
                 
-                <form action="#" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('settings.general.update') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     
@@ -63,6 +63,11 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Adresse') }}</label>
                             <textarea name="address" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">{{ $university->address ?? '' }}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Site web') }}</label>
+                            <input type="text" name="website" value="{{ $university->website ?? '' }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                         </div>
                         
                         <div>

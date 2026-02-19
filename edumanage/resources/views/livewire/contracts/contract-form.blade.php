@@ -75,7 +75,7 @@
                     class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     <option value="">Aucune</option>
                     @foreach($programYears as $py)
-                    <option value="{{ $py->id }}">{{ $py->program->name }} - {{ $py->name }} @if($py->total_fees > 0)({{ number_format($py->total_fees, 0) }} €)@endif</option>
+                    <option value="{{ $py->id }}">{{ $py->program?->name ?? '-' }} - {{ $py->name }} @if($py->total_fees > 0)({{ number_format($py->total_fees, 0) }} €)@endif</option>
                     @endforeach
                 </select>
                 @error('program_year_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror

@@ -32,6 +32,14 @@
                         </svg>
                         Modifier
                     </a>
+                    @if(auth()->user()->canAccessModule('documents'))
+                        <a href="{{ route('documents.students.attestation-inscription', $student) }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            Attestation
+                        </a>
+                        <a href="{{ route('documents.students.certificat-scolarite', $student) }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            Certificat
+                        </a>
+                    @endif
                     <a href="{{ route('students.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
                         Retour
                     </a>
@@ -82,11 +90,11 @@
                     @if($student->currentEnrollment)
                     <div class="flex justify-between">
                         <dt class="text-gray-500">Programme actuel</dt>
-                        <dd class="text-gray-900">{{ $student->currentEnrollment->program->name ?? '-' }}</dd>
+                        <dd class="text-gray-900">{{ $student->currentEnrollment->programYear->program->name ?? '-' }}</dd>
                     </div>
                     <div class="flex justify-between">
                         <dt class="text-gray-500">Niveau</dt>
-                        <dd class="text-gray-900">{{ $student->currentEnrollment->level ?? '-' }}</dd>
+                        <dd class="text-gray-900">{{ $student->currentEnrollment->programYear->name ?? '-' }}</dd>
                     </div>
                     @endif
                     @if($student->moodle_id)
@@ -121,8 +129,8 @@
                     <tbody class="divide-y divide-gray-200">
                         @foreach($student->grades->take(10) as $grade)
                         <tr>
-                            <td class="px-4 py-3 text-sm text-gray-900">{{ $grade->ecu->name ?? '-' }}</td>
-                            <td class="px-4 py-3 text-sm text-gray-500">{{ $grade->type }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-900">{{ $grade->evaluation?->ecu?->name ?? '-' }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-500">{{ $grade->evaluation?->type ?? '-' }}</td>
                             <td class="px-4 py-3 text-sm font-medium {{ $grade->score >= 10 ? 'text-green-600' : 'text-red-600' }}">{{ number_format($grade->score, 2) }}/20</td>
                             <td class="px-4 py-3 text-sm text-gray-500">{{ $grade->created_at->format('d/m/Y') }}</td>
                         </tr>

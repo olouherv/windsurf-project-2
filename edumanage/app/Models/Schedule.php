@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Schedule extends Model
@@ -17,6 +18,9 @@ class Schedule extends Model
         'room_id',
         'student_group_id',
         'academic_year_id',
+        'category',
+        'title',
+        'scheduled_date',
         'type',
         'day_of_week',
         'start_time',
@@ -29,6 +33,7 @@ class Schedule extends Model
 
     protected $casts = [
         'day_of_week' => 'integer',
+        'scheduled_date' => 'date',
         'start_date' => 'date',
         'end_date' => 'date',
         'is_recurring' => 'boolean',
@@ -62,6 +67,11 @@ class Schedule extends Model
     public function exceptions(): HasMany
     {
         return $this->hasMany(ScheduleException::class);
+    }
+
+    public function equipments(): BelongsToMany
+    {
+        return $this->belongsToMany(Equipment::class)->withTimestamps();
     }
 
     public function getDayNameAttribute(): string

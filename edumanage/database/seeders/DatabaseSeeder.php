@@ -14,6 +14,7 @@ use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\Room;
 use App\Models\ModuleSetting;
+use App\Models\PricingPlan;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
@@ -46,7 +47,24 @@ class DatabaseSeeder extends Seeder
             'email' => 'contact@univ-demo.edu',
             'phone' => '+33 1 23 45 67 89',
             'address' => '123 Rue de l\'Université, 75001 Paris',
+            'trial_ends_at' => now()->addDays(14),
             'is_active' => true,
+        ]);
+
+        $starterPlan = PricingPlan::firstOrCreate([
+            'key' => 'starter',
+        ], [
+            'name' => 'Starter',
+            'price_monthly' => 49,
+            'price_yearly' => 490,
+            'currency' => 'EUR',
+            'is_active' => true,
+        ]);
+
+        $university->update([
+            'pricing_plan_id' => $starterPlan->id,
+            'plan_key' => $starterPlan->key,
+            'plan_started_at' => now(),
         ]);
 
         // Enable default modules

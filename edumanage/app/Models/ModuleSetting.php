@@ -27,6 +27,7 @@ class ModuleSetting extends Model
         'teachers' => ['name' => 'Enseignants', 'required' => true, 'default' => true],
         'academic_structure' => ['name' => 'Structure Académique', 'required' => true, 'default' => true],
         'grades' => ['name' => 'Notes & Évaluations', 'required' => true, 'default' => true],
+        'contracts' => ['name' => 'Contrats & Paiements', 'required' => false, 'default' => false],
         'schedules' => ['name' => 'Planification', 'required' => false, 'default' => true],
         'absences' => ['name' => 'Absences & Présences', 'required' => false, 'default' => false],
         'enrollments' => ['name' => 'Inscriptions Pédagogiques', 'required' => false, 'default' => false],

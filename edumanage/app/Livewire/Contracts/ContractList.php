@@ -21,8 +21,12 @@ class ContractList extends Component
 
     public function mount(): void
     {
+        $universityId = auth()->user()->university_id;
+
         if (!$this->academicYearId) {
-            $currentYear = AcademicYear::where('is_current', true)->first();
+            $currentYear = AcademicYear::where('is_current', true)
+                ->where('university_id', $universityId)
+                ->first();
             $this->academicYearId = $currentYear?->id ?? '';
         }
     }
@@ -39,6 +43,8 @@ class ContractList extends Component
 
     public function render()
     {
+        $universityId = auth()->user()->university_id;
+
         $contracts = StudentContract::query()
             ->with(['student', 'academicYear', 'programYear.program'])
             ->when($this->academicYearId, fn($q) => $q->where('academic_year_id', $this->academicYearId))
@@ -57,7 +63,7 @@ class ContractList extends Component
 
         return view('livewire.contracts.contract-list', [
             'contracts' => $contracts,
-            'academicYears' => AcademicYear::orderBy('start_date', 'desc')->get(),
+            'academicYears' => AcademicYear::where('university_id', $universityId)->orderBy('start_date', 'desc')->get(),
         ]);
     }
 }

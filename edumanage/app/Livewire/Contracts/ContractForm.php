@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\ProgramYear;
 use App\Models\Student;
 use App\Models\StudentContract;
+use App\Models\StudentEnrollment;
 use Livewire\Component;
 
 class ContractForm extends Component
@@ -29,6 +30,31 @@ class ContractForm extends Component
     public ?string $special_conditions = '';
     public ?string $notes = '';
 
+    protected bool $autoSelectedProgramYear = false;
+
+    protected function prefillProgramYearFromStudentEnrollment(): void
+    {
+        if (!$this->student_id || !$this->academic_year_id) {
+            return;
+        }
+
+        if ($this->program_year_id) {
+            return;
+        }
+
+        $enrollment = StudentEnrollment::where('student_id', $this->student_id)
+            ->where('academic_year_id', $this->academic_year_id)
+            ->where('status', '!=', 'abandoned')
+            ->latest('id')
+            ->first();
+
+        if ($enrollment) {
+            $this->program_year_id = $enrollment->program_year_id;
+            $this->autoSelectedProgramYear = true;
+            $this->updatedProgramYearId($this->program_year_id);
+        }
+    }
+
     public function updatedStudentSearch($value): void
     {
         $this->showStudentDropdown = strlen($value) >= 2;
@@ -46,6 +72,10 @@ class ContractForm extends Component
             $this->selectedStudent = $student;
             $this->studentSearch = $student->full_name . ' (' . $student->student_id . ')';
             $this->showStudentDropdown = false;
+
+            if (!$this->editMode) {
+                $this->prefillProgramYearFromStudentEnrollment();
+            }
         }
     }
 
@@ -65,6 +95,10 @@ class ContractForm extends Component
                 $this->start_date = $academicYear->start_date?->format('Y-m-d');
                 $this->end_date = $academicYear->end_date?->format('Y-m-d');
             }
+        }
+
+        if (!$this->editMode) {
+            $this->prefillProgramYearFromStudentEnrollment();
         }
     }
 
@@ -100,6 +134,8 @@ class ContractForm extends Component
 
     public function mount(?StudentContract $contract = null, ?Student $student = null): void
     {
+        $universityId = auth()->user()->university_id;
+
         if ($contract && $contract->exists) {
             $this->contract = $contract;
             $this->editMode = true;
@@ -129,7 +165,9 @@ class ContractForm extends Component
         }
 
         if (!$this->academic_year_id) {
-            $currentYear = AcademicYear::where('is_current', true)->first();
+            $currentYear = AcademicYear::where('is_current', true)
+                ->where('university_id', $universityId)
+                ->first();
             if ($currentYear) {
                 $this->academic_year_id = $currentYear->id;
                 if (!$this->start_date) {
@@ -139,6 +177,10 @@ class ContractForm extends Component
                     $this->end_date = $currentYear->end_date?->format('Y-m-d');
                 }
             }
+        }
+
+        if (!$this->editMode) {
+            $this->prefillProgramYearFromStudentEnrollment();
         }
     }
 
@@ -173,9 +215,12 @@ class ContractForm extends Component
 
     public function render()
     {
+        $universityId = auth()->user()->university_id;
+
         $searchResults = [];
         if ($this->showStudentDropdown && strlen($this->studentSearch) >= 2) {
-            $searchResults = Student::where(function ($q) {
+            $searchResults = Student::where('university_id', $universityId)
+                ->where(function ($q) {
                 $q->where('first_name', 'like', '%' . $this->studentSearch . '%')
                   ->orWhere('last_name', 'like', '%' . $this->studentSearch . '%')
                   ->orWhere('student_id', 'like', '%' . $this->studentSearch . '%');
@@ -184,8 +229,11 @@ class ContractForm extends Component
 
         return view('livewire.contracts.contract-form', [
             'searchResults' => $searchResults,
-            'academicYears' => AcademicYear::orderBy('start_date', 'desc')->get(),
-            'programYears' => ProgramYear::with('program')->get(),
+            'academicYears' => AcademicYear::where('university_id', $universityId)->orderBy('start_date', 'desc')->get(),
+            'programYears' => ProgramYear::query()
+                ->whereHas('program', fn ($q) => $q->where('university_id', $universityId))
+                ->with('program')
+                ->get(),
         ]);
     }
 }
