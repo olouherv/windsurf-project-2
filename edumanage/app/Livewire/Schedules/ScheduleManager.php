@@ -7,6 +7,7 @@ use App\Models\Ecu;
 use App\Models\Equipment;
 use App\Models\Room;
 use App\Models\Schedule;
+use App\Models\ScheduleSession;
 use App\Models\StudentGroup;
 use App\Models\Teacher;
 use Illuminate\Support\Carbon;
@@ -323,6 +324,55 @@ class ScheduleManager extends Component
     {
         Schedule::whereKey($id)->delete();
         session()->flash('success', __('Séance supprimée.'));
+    }
+
+    public function generateSessions(int $scheduleId): void
+    {
+        $schedule = Schedule::findOrFail($scheduleId);
+        
+        if (!$schedule->is_recurring || !$schedule->start_date || !$schedule->end_date) {
+            session()->flash('error', __('Ce créneau n\'est pas récurrent ou n\'a pas de période définie.'));
+            return;
+        }
+
+        $current = Carbon::parse($schedule->start_date);
+        $last = Carbon::parse($schedule->end_date);
+        $dayOfWeek = $schedule->day_of_week;
+        $generatedCount = 0;
+
+        while ($current->lessThanOrEqualTo($last)) {
+            if ($current->dayOfWeek === $dayOfWeek) {
+                // Vérifier si la session existe déjà
+                $exists = ScheduleSession::where('schedule_id', $schedule->id)
+                    ->where('session_date', $current->format('Y-m-d'))
+                    ->exists();
+
+                if (!$exists) {
+                    ScheduleSession::create([
+                        'schedule_id' => $schedule->id,
+                        'ecu_id' => $schedule->ecu_id,
+                        'teacher_id' => $schedule->teacher_id,
+                        'room_id' => $schedule->room_id,
+                        'academic_year_id' => $schedule->academic_year_id,
+                        'student_group_id' => $schedule->student_group_id,
+                        'session_date' => $current->format('Y-m-d'),
+                        'start_time' => $schedule->start_time,
+                        'end_time' => $schedule->end_time,
+                        'type' => $schedule->type,
+                        'status' => 'planned',
+                    ]);
+                    $generatedCount++;
+                }
+            }
+            $current->addDay();
+        }
+
+        session()->flash('success', __(':count séances générées.', ['count' => $generatedCount]));
+    }
+
+    public function getScheduleSessionsCount(int $scheduleId): int
+    {
+        return ScheduleSession::where('schedule_id', $scheduleId)->count();
     }
 
     public function render()

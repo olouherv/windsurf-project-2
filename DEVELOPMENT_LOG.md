@@ -105,10 +105,53 @@
   - Ignorer / notifier les étudiants déjà inscrits pour l'année choisie
   - Suppression de l’onglet et de la route dédiée `enrollments`
 
+### 2026-03-16 - Corrections Modules & Menus + Documents & Absences
+
+#### ✅ Bug fixes
+- [x] Correction `University::isModuleEnabled()` : les modules activés via Paramètres n'apparaissaient pas dans le menu si l'université avait un plan de pricing
+  - Logique corrigée : vérification `module_settings` même quand un plan existe
+- [x] Synchronisation des constantes `MODULES` entre `ModuleSetting` et `ModuleManager`
+  - `grades` marqué comme required (obligatoire)
+  - Suppression du module `enrollments` (intégré à la page Étudiants)
+- [x] Protection des routes par middleware `module:<key>` manquante :
+  - `evaluations/*` → `module:grades`
+  - `rooms/*`, `equipments/*`, `schedules/*` → `module:schedules`
+- [x] Ajout icône "bell" pour le module Notifications dans la page de gestion des modules
+
+#### ✅ Documents Officiels (complet)
+- [x] Attestation d'inscription (PDF)
+- [x] Certificat de scolarité (PDF)
+- [x] Reçu de paiement (PDF) - avec détails contrat, échéancier, situation financière
+- [x] Bulletin de notes (PDF) - par semestre, avec moyennes UE/ECU, crédits validés
+- [x] Liste des étudiants (PDF) - par filière et année académique
+
+#### ✅ Liste des étudiants par filière
+- [x] Page dédiée avec filtres : année académique, filière, niveau
+- [x] Recherche par nom/matricule
+- [x] Export PDF de la liste filtrée
+- [x] Route `/students-by-program`
+
+#### ✅ Absences & Présences (nouveau module)
+- [x] Migration `attendances` : schedule_id, student_id, session_date, status (present/absent/late/excused)
+- [x] Modèle `Attendance` avec relations et helpers
+- [x] Composant `AttendanceManager` : sélection séance + date, feuille de présence interactive
+  - Filtres : année académique, filière, niveau, ECU, séance
+  - Statuts : Présent (P), Absent (A), Retard (R), Excusé (E)
+  - Actions : marquer tous, enregistrer
+  - Statistiques temps réel
+- [x] Composant `StudentAttendanceHistory` : historique présences par étudiant
+  - Statistiques : total séances, présences, absences, retards, taux
+- [x] Menu "Présences" dans le sidebar (module activable)
+- [x] Routes protégées par middleware `module:absences`
+
 #### ⏳ À faire (SuperAdmin)
 - [ ] Offres / Abonnements par université (plan choisi)
 - [ ] Tarification : interface pour modifier les tarifs (plans, options)
 - [ ] Facturation (historique, statuts, échéances)
+
+#### ⏳ À faire (Modules)
+- [ ] Notifications email : étendre les notifications in-app vers email
+- [ ] Intégration Moodle : synchronisation étudiants/enseignants/cours/cohortes
 
 ### 2026-02-18 - Phase 6: Garants & Contrats Étudiants
 
@@ -289,20 +332,25 @@ Tables créées:
 - [x] Équipements
   - [x] CRUD équipements (multi-tenant)
   - [x] Affectation multi-équipements sur une planification
-- [ ] Absences & Présences
-  - [ ] Feuilles de présence par séance/ECU
-  - [ ] Absences (absent/excusé) + retards
+- [x] Stages & Mémoires
+  - [x] CRUD Stages (entreprise, sujet, dates, encadrant)
+  - [x] CRUD Mémoires (titre, résumé, dates, encadrant, note)
+  - [x] Autocomplétion étudiant/encadrant
+- [x] Documents Officiels (complet)
+  - [x] Attestation d'inscription (PDF)
+  - [x] Certificat de scolarité (PDF)
+  - [x] Reçu de paiement (PDF)
+  - [x] Bulletin de notes (PDF)
+  - [x] Liste étudiants par filière (PDF)
+- [x] Notifications (in-app)
+  - [x] Table `notifications` + page liste
+  - [x] Action "tout marquer comme lu"
+  - [ ] Notifications email (événements: paiement, notes publiées)
+- [x] Absences & Présences
+  - [x] Feuilles de présence par séance/ECU
+  - [x] Statuts : présent, absent, retard, excusé
+  - [x] Historique par étudiant avec statistiques
   - [ ] Exports (PDF/Excel)
-- [ ] Inscriptions Pédagogiques
-  - [ ] Gestion des groupes / parcours
-  - [ ] Workflow de validation
-- [ ] Stages & Mémoires
-  - [ ] Suivi stage (entreprise, tuteur, convention)
-  - [ ] Mémoire (sujet, encadrant, soutenance)
-- [ ] Documents Officiels
-  - [ ] Génération PDF : attestations, certificats, contrats, bulletins
-- [ ] Notifications
-  - [ ] Notifications in-app + email (événements: paiement, notes publiées, absences)
 - [ ] Intégration Moodle
   - [ ] Synchronisation (étudiants/enseignants/cours/cohortes)
 

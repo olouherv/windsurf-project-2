@@ -42,6 +42,7 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
 
     // Students
     Route::resource('students', StudentController::class);
+    Route::get('students-by-program', fn() => view('students.by-program'))->name('students.by-program');
 
     // Teachers
     Route::resource('teachers', TeacherController::class);
@@ -49,16 +50,18 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
     // Programs
     Route::resource('programs', ProgramController::class);
 
-    // Rooms (Salles)
-    Route::get('rooms', [RoomController::class, 'index'])->name('rooms.index');
-    Route::get('rooms/create', [RoomController::class, 'create'])->name('rooms.create');
-    Route::get('rooms/{room}', [RoomController::class, 'show'])->name('rooms.show');
-    Route::get('rooms/{room}/edit', [RoomController::class, 'edit'])->name('rooms.edit');
+    // Rooms (Salles) - lié au module schedules
+    Route::middleware(['module:schedules'])->group(function () {
+        Route::get('rooms', [RoomController::class, 'index'])->name('rooms.index');
+        Route::get('rooms/create', [RoomController::class, 'create'])->name('rooms.create');
+        Route::get('rooms/{room}', [RoomController::class, 'show'])->name('rooms.show');
+        Route::get('rooms/{room}/edit', [RoomController::class, 'edit'])->name('rooms.edit');
 
-    // Equipments (Équipements)
-    Route::get('equipments', [EquipmentController::class, 'index'])->name('equipments.index');
-    Route::get('equipments/create', [EquipmentController::class, 'create'])->name('equipments.create');
-    Route::get('equipments/{equipment}/edit', [EquipmentController::class, 'edit'])->name('equipments.edit');
+        // Equipments (Équipements)
+        Route::get('equipments', [EquipmentController::class, 'index'])->name('equipments.index');
+        Route::get('equipments/create', [EquipmentController::class, 'create'])->name('equipments.create');
+        Route::get('equipments/{equipment}/edit', [EquipmentController::class, 'edit'])->name('equipments.edit');
+    });
 
     // Program Years (Années de formation)
     Route::get('programs/{program}/years', [ProgramYearController::class, 'index'])->name('programs.years.index');
@@ -97,11 +100,13 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
     });
 
     // Évaluations et Notes
-    Route::get('evaluations', [EvaluationController::class, 'index'])->name('evaluations.index');
-    Route::get('evaluations/create/{ecu?}', [EvaluationController::class, 'create'])->name('evaluations.create');
-    Route::get('evaluations/{evaluation}', [EvaluationController::class, 'show'])->name('evaluations.show');
-    Route::get('evaluations/{evaluation}/edit', [EvaluationController::class, 'edit'])->name('evaluations.edit');
-    Route::get('evaluations/{evaluation}/grades', [EvaluationController::class, 'grades'])->name('evaluations.grades');
+    Route::middleware(['module:grades'])->group(function () {
+        Route::get('evaluations', [EvaluationController::class, 'index'])->name('evaluations.index');
+        Route::get('evaluations/create/{ecu?}', [EvaluationController::class, 'create'])->name('evaluations.create');
+        Route::get('evaluations/{evaluation}', [EvaluationController::class, 'show'])->name('evaluations.show');
+        Route::get('evaluations/{evaluation}/edit', [EvaluationController::class, 'edit'])->name('evaluations.edit');
+        Route::get('evaluations/{evaluation}/grades', [EvaluationController::class, 'grades'])->name('evaluations.grades');
+    });
 
     // Documents officiels (PDF)
     Route::middleware(['module:documents'])->group(function () {
@@ -109,6 +114,12 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
             ->name('documents.students.attestation-inscription');
         Route::get('documents/students/{student}/certificat-scolarite', [DocumentsController::class, 'certificatScolarite'])
             ->name('documents.students.certificat-scolarite');
+        Route::get('documents/students/{student}/bulletin-notes/{academicYearId?}', [DocumentsController::class, 'bulletinNotes'])
+            ->name('documents.students.bulletin-notes');
+        Route::get('documents/payments/{payment}/recu', [DocumentsController::class, 'recuPaiement'])
+            ->name('documents.payments.recu');
+        Route::get('documents/liste-etudiants', [DocumentsController::class, 'listeEtudiants'])
+            ->name('documents.liste-etudiants');
     });
 
     // Stages & Mémoires
@@ -123,14 +134,30 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
         Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
     });
 
-    // Schedules
-    Route::view('schedules', 'schedules.index')->name('schedules.index');
+    // Schedules (Planification)
+    Route::middleware(['module:schedules'])->group(function () {
+        Route::view('schedules', 'schedules.index')->name('schedules.index');
+        Route::view('schedules/calendar', 'schedules.calendar')->name('schedules.calendar');
+        Route::view('schedules/sessions', 'schedules.sessions')->name('schedules.sessions');
+    });
+
+    // Délibérations
+    Route::middleware(['module:grades'])->group(function () {
+        Route::view('deliberations', 'deliberations.index')->name('deliberations.index');
+    });
+
+    // Absences & Présences
+    Route::middleware(['module:absences'])->group(function () {
+        Route::get('attendance', fn() => view('attendance.index'))->name('attendance.index');
+        Route::get('attendance/student/{student}', fn(\App\Models\Student $student) => view('attendance.student', compact('student')))->name('attendance.student');
+    });
 
     // Settings (admin only)
     Route::middleware(['can:admin'])->prefix('settings')->name('settings.')->group(function () {
         Route::view('/', 'settings.index')->name('index');
         Route::view('/modules', 'settings.modules')->name('modules');
         Route::view('/moodle', 'settings.moodle')->name('moodle');
+        Route::view('/deliberation', 'settings.deliberation')->name('deliberation');
 
         Route::put('/general', [SettingsController::class, 'updateGeneral'])->name('general.update');
         Route::put('/moodle', [SettingsController::class, 'updateMoodle'])->name('moodle.update');

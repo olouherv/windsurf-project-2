@@ -86,4 +86,22 @@ class Schedule extends Model
         $end = \Carbon\Carbon::parse($this->end_time);
         return $end->diffInMinutes($start) / 60;
     }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    public function getCompletedSessionsCountAttribute(): int
+    {
+        return $this->attendances()
+            ->select('session_date')
+            ->distinct()
+            ->count();
+    }
+
+    public function getCompletedHoursAttribute(): float
+    {
+        return $this->completed_sessions_count * $this->duration_in_hours;
+    }
 }

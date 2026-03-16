@@ -28,16 +28,22 @@ class ModuleManager extends Component
             'icon' => 'library',
             'required' => true,
         ],
+        'grades' => [
+            'name' => 'Notes & Évaluations',
+            'description' => 'Saisie des notes, calcul des moyennes et bulletins',
+            'icon' => 'clipboard-check',
+            'required' => true,
+        ],
         'contracts' => [
             'name' => 'Contrats & Paiements',
             'description' => 'Contrats étudiants, échéanciers et suivi des paiements',
             'icon' => 'document-text',
             'required' => false,
         ],
-        'grades' => [
-            'name' => 'Notes & Évaluations',
-            'description' => 'Saisie des notes, calcul des moyennes et bulletins',
-            'icon' => 'clipboard-check',
+        'vacataire_contracts' => [
+            'name' => 'Contrats Vacataires',
+            'description' => 'Contrats vacataires, heures et paiements',
+            'icon' => 'document-text',
             'required' => false,
         ],
         'schedules' => [
@@ -48,20 +54,8 @@ class ModuleManager extends Component
         ],
         'absences' => [
             'name' => 'Absences & Présences',
-            'description' => 'Gestion des absences, retards et feuilles de présence',
+            'description' => 'Feuilles de présence par séance, suivi des absences et retards',
             'icon' => 'clipboard-check',
-            'required' => false,
-        ],
-        'enrollments' => [
-            'name' => 'Inscriptions Pédagogiques',
-            'description' => 'Inscriptions aux formations, parcours et statuts',
-            'icon' => 'users',
-            'required' => false,
-        ],
-        'vacataire_contracts' => [
-            'name' => 'Contrats Vacataires',
-            'description' => 'Contrats vacataires, heures et paiements',
-            'icon' => 'document-text',
             'required' => false,
         ],
         'stages' => [
@@ -78,8 +72,8 @@ class ModuleManager extends Component
         ],
         'notifications' => [
             'name' => 'Notifications',
-            'description' => 'Alertes et notifications (email / in-app)',
-            'icon' => 'link',
+            'description' => 'Alertes et notifications in-app',
+            'icon' => 'bell',
             'required' => false,
         ],
         'moodle' => [

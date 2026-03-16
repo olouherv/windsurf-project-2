@@ -94,8 +94,8 @@ class University extends Model
         }
 
         $planModules = $this->pricingPlan?->included_modules;
-        if (is_array($planModules)) {
-            return in_array($moduleKey, $planModules, true);
+        if (is_array($planModules) && in_array($moduleKey, $planModules, true)) {
+            return true;
         }
 
         $setting = $this->moduleSettings()->where('module_key', $moduleKey)->first();

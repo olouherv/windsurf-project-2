@@ -93,4 +93,49 @@ class Ecu extends Model
 
         return $totalCoef > 0 ? round($weightedSum / $totalCoef, 2) : null;
     }
+
+    public function getCompletedHoursByType(int $academicYearId, ?string $type = null): float
+    {
+        $query = $this->schedules()
+            ->where('academic_year_id', $academicYearId);
+
+        if ($type) {
+            $query->where('type', $type);
+        }
+
+        $schedules = $query->get();
+        $totalHours = 0;
+
+        foreach ($schedules as $schedule) {
+            $totalHours += $schedule->completed_hours;
+        }
+
+        return $totalHours;
+    }
+
+    public function getHoursSummary(int $academicYearId): array
+    {
+        return [
+            'cm' => [
+                'planned' => $this->hours_cm,
+                'completed' => $this->getCompletedHoursByType($academicYearId, 'cm'),
+                'remaining' => max(0, $this->hours_cm - $this->getCompletedHoursByType($academicYearId, 'cm')),
+            ],
+            'td' => [
+                'planned' => $this->hours_td,
+                'completed' => $this->getCompletedHoursByType($academicYearId, 'td'),
+                'remaining' => max(0, $this->hours_td - $this->getCompletedHoursByType($academicYearId, 'td')),
+            ],
+            'tp' => [
+                'planned' => $this->hours_tp,
+                'completed' => $this->getCompletedHoursByType($academicYearId, 'tp'),
+                'remaining' => max(0, $this->hours_tp - $this->getCompletedHoursByType($academicYearId, 'tp')),
+            ],
+            'total' => [
+                'planned' => $this->total_hours,
+                'completed' => $this->getCompletedHoursByType($academicYearId),
+                'remaining' => max(0, $this->total_hours - $this->getCompletedHoursByType($academicYearId)),
+            ],
+        ];
+    }
 }
